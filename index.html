@@ -1,0 +1,54 @@
+<html>
+<head>
+
+</head>
+<body>
+<input type="text" id="values_input"/>
+<input type="button" value="encrypt" id="encrypt"/>
+<input type="button" value="decrypt" id="decrypt"/>
+<table id='table'>
+</table>
+
+
+<script type='text/javascript'>
+    const server_address = 'http://localhost:8094';
+    window.onload = () =>
+        fetch(`${server_address}/values`)
+            .then(response => response.json())
+            .then(data => data.forEach(v => addRow(v)))
+            .catch(error => console.error(error));
+    document.getElementById('encrypt').onclick = () =>
+        postData(`${server_address}/values`, document.getElementById('values_input').value)
+            .then(response => addRow(response))
+            .catch(error => console.error(error));
+    document.getElementById('decrypt').onclick = () => {
+        const value_input = document.getElementById('values_input');
+        postData(`${server_address}/decrypted_values`, value_input.value)
+            .then(data => value_input.value = data)
+            .catch(error => console.error(error));
+    };
+
+    function postData(url = '', data = {}) {
+        return fetch(url, {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: {'Content-Type': 'application/json'}
+        })
+            .then(response => {
+                if (response.ok) {
+                    return response.text();
+                } else {
+                    throw new Error('Failed to receive response from server');
+                }
+            })
+    }
+
+
+    function addRow(value) {
+        const cell = document.getElementById('table').insertRow(0).insertCell(0);
+        cell.innerText = value;
+        cell.onclick = () => document.getElementById('values_input').value = cell.innerText
+    }
+</script>
+</body>
+</html>
